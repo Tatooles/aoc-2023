@@ -22,33 +22,47 @@ const stringNumbers = new Map([
 let total = 0;
 
 for (const row of arr) {
+  let firstNumIndex = Number.MAX_SAFE_INTEGER;
   let firstNum;
+  let lastNumIndex = -1;
   let lastNum;
 
-  let parsedRow = row;
-
-  // We can go through and replace any of the string numbers with the digit then just run this code lol
-  for (const [key, value] of stringNumbers) {
-    parsedRow = parsedRow.replace(key, value);
-    // This doesn't work because it starts with the lowest number, need to start at the beginning of the string :(
-  }
-
   // Just go through twice, once starting from beginning, once from end
-  for (let i = 0; i < parsedRow.length; i++) {
-    if (!isNaN(parseInt(parsedRow[i]))) {
-      firstNum = parsedRow[i];
+  for (let i = 0; i < row.length; i++) {
+    if (!isNaN(parseInt(row[i])) && i < firstNumIndex) {
+      firstNumIndex = i;
+      firstNum = row[i];
       break;
+    }
+
+    for (const [key, value] of stringNumbers) {
+      const index = row.indexOf(key);
+      if (index !== -1 && index < firstNumIndex) {
+        firstNumIndex = index;
+        firstNum = value;
+        break;
+      }
     }
   }
 
-  for (let i = parsedRow.length - 1; i >= 0; i--) {
-    if (!isNaN(parseInt(parsedRow[i]))) {
-      lastNum = parsedRow[i];
+  for (let i = row.length - 1; i >= 0; i--) {
+    if (!isNaN(parseInt(row[i])) && i > lastNumIndex) {
+      lastNumIndex = i;
+      lastNum = row[i];
       break;
+    }
+
+    for (const [key, value] of stringNumbers) {
+      const index = row.indexOf(key, i);
+      if (index > lastNumIndex) {
+        lastNumIndex = index;
+        lastNum = value;
+        break;
+      }
     }
   }
   total += parseInt(firstNum.concat(lastNum));
-  // console.log(row, parsedRow);
+  // console.log(row, firstNum, lastNum);
 }
 
 console.log(total);
