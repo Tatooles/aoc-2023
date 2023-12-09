@@ -26,12 +26,7 @@ for (let i = 0; i < parsed[0].length; i++) {
 
   // Loop all the way up until duration to hit all possible outcomes
   for (let j = 0; j < duration; j++) {
-    let distance = 0;
-    const remainingDuration = duration - j;
-    distance = j * remainingDuration;
-    if (distance > record) {
-      wins++;
-    }
+    if (j * (duration - j) > record) wins++;
   }
   total *= wins;
 }
