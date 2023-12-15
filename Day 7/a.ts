@@ -29,11 +29,15 @@ const main = () => {
     // Implement sorting algo highest number returned at top
 
     // 5 of a kind
-    const firstHas5 = check5(firstHand);
-    const secondHas5 = check5(secondHand);
-    console.log(firstHand, firstHas5);
-    if (firstHas5 === secondHas5) {
-      // Move on the next check
+    const [firstHas5, firstNumber] = check5(firstHand);
+    const [secondHas5, secondNumber] = check5(secondHand);
+    if (firstHas5 && secondHas5) {
+      // Compare value of 5 card number
+      if (cardStrength.get(firstNumber)! > cardStrength.get(secondNumber)!)
+        return -1;
+      return 1;
+    } else if (!firstHas5 && !secondHas5) {
+      // Move on to next check
     } else {
       // Return whichever one is true
       return firstHas5 ? -1 : 1;
@@ -71,16 +75,16 @@ const convertToMap = (hand: string) => {
   return handMap;
 };
 
-const check5 = (hand: Map<string, number>) => {
+const check5 = (hand: Map<string, number>): [boolean, string] => {
   // Check
   for (const [key, value] of hand) {
     if (value === 5) {
       // found 5 of a kind
       console.log("has 5 of a kind:", hand);
-      return true;
+      return [true, key];
     }
   }
-  return false;
+  return [false, ""];
 };
 
 for (const line of lines) {
