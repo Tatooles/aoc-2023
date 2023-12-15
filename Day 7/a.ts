@@ -29,11 +29,11 @@ const main = () => {
     // Implement sorting algo highest number returned at top
 
     // 5 of a kind
-    const [firstHas5, firstNumber] = check5(firstHand);
-    const [secondHas5, secondNumber] = check5(secondHand);
+    const [firstHas5, first5Number] = checkX(firstHand, 5);
+    const [secondHas5, second5Number] = checkX(secondHand, 5);
     if (firstHas5 && secondHas5) {
       // Compare value of 5 card number
-      if (cardStrength.get(firstNumber)! > cardStrength.get(secondNumber)!)
+      if (cardStrength.get(first5Number)! > cardStrength.get(second5Number)!)
         return -1;
       return 1;
     } else if (!firstHas5 && !secondHas5) {
@@ -44,6 +44,19 @@ const main = () => {
     }
 
     // 4 of a kind
+    const [firstHas4, first4Number] = checkX(firstHand, 4);
+    const [secondHas4, second4Number] = checkX(secondHand, 4);
+    if (firstHas4 && secondHas4) {
+      // Compare value of 5 card number
+      if (cardStrength.get(first4Number)! > cardStrength.get(second4Number)!)
+        return -1;
+      return 1;
+    } else if (!firstHas4 && !secondHas4) {
+      // Move on to next check
+    } else {
+      // Return whichever one is true
+      return firstHas4 ? -1 : 1;
+    }
 
     // Full house
 
@@ -75,12 +88,14 @@ const convertToMap = (hand: string) => {
   return handMap;
 };
 
-const check5 = (hand: Map<string, number>): [boolean, string] => {
-  // Check
+const checkX = (
+  hand: Map<string, number>,
+  number: number
+): [boolean, string] => {
   for (const [key, value] of hand) {
-    if (value === 5) {
+    if (value === number) {
       // found 5 of a kind
-      console.log("has 5 of a kind:", hand);
+      console.log(`has ${number} of a kind:`, hand);
       return [true, key];
     }
   }
@@ -90,5 +105,22 @@ const check5 = (hand: Map<string, number>): [boolean, string] => {
 for (const line of lines) {
   // console.log(line);
 }
+
+// const checkXofAKind = (number: number) => {
+//   const [firstHas4, first4Number] = checkX(firstHand, 4);
+//   const [secondHas4, second4Number] = checkX(secondHand, 4);
+//   if (firstHas4 && secondHas4) {
+//     // Compare value of 5 card number
+//     if (cardStrength.get(first4Number)! > cardStrength.get(second4Number)!)
+//       return -1;
+//     return 1;
+//   } else if (!firstHas4 && !secondHas4) {
+//     // Move on to next check
+//     return 0;
+//   } else {
+//     // Return whichever one is true
+//     return firstHas4 ? -1 : 1;
+//   }
+// };
 
 main();
