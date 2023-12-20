@@ -11,7 +11,7 @@ const cardStrength = new Map([
   ["7", 7],
   ["8", 8],
   ["9", 9],
-  ["10", 10],
+  ["T", 10],
   ["J", 11],
   ["Q", 12],
   ["K", 13],
@@ -21,44 +21,97 @@ const cardStrength = new Map([
 let total = 0;
 
 const main = () => {
-  const sorted = lines.sort((a, b) => {
+  const sorted = lines.sort((b, a) => {
     // Parse hand itself
-    const firstHand = convertToMap(a.split(" ")[0]);
-    const secondHand = convertToMap(b.split(" ")[0]);
+    const firstRawHand = a.split(" ")[0];
+    const secondRawHand = b.split(" ")[0];
+    const firstHand = convertToMap(firstRawHand);
+    const secondHand = convertToMap(secondRawHand);
 
     // Implement sorting algo highest number returned at top
 
     // 5 of a kind
-    const fiveCheck = checkXofAKind(firstHand, secondHand, 5);
+    const fiveCheck = checkXofAKind(
+      firstHand,
+      secondHand,
+      5,
+      firstRawHand,
+      secondRawHand
+    );
 
     if (fiveCheck !== 0) return fiveCheck;
 
     // 4 of a kind
-    const fourCheck = checkXofAKind(firstHand, secondHand, 4);
+    const fourCheck = checkXofAKind(
+      firstHand,
+      secondHand,
+      4,
+      firstRawHand,
+      secondRawHand
+    );
 
     if (fourCheck !== 0) return fourCheck;
 
     // Full house
-    const fullHouseCheck = checkFullHouse(firstHand, secondHand);
+    const fullHouseCheck = checkFullHouse(
+      firstHand,
+      secondHand,
+      firstRawHand,
+      secondRawHand
+    );
 
     if (fullHouseCheck !== 0) return fullHouseCheck;
 
     // 3 of a kind
-    const threeCheck = checkXofAKind(firstHand, secondHand, 3);
+    const threeCheck = checkXofAKind(
+      firstHand,
+      secondHand,
+      3,
+      firstRawHand,
+      secondRawHand
+    );
 
     if (threeCheck !== 0) return threeCheck;
 
     // 2 pair
+    const twoPairCheck = checkTwoPair(
+      firstHand,
+      secondHand,
+      firstRawHand,
+      secondRawHand
+    );
+
+    if (twoPairCheck !== 0) return twoPairCheck;
 
     // 1 pair
-    // AKA 2 of a kind
+    const twoCheck = checkXofAKind(
+      firstHand,
+      secondHand,
+      2,
+      firstRawHand,
+      secondRawHand
+    );
+
+    if (twoCheck !== 0) return twoCheck;
 
     // high card
+    const highCardCheck = checkHighCard(firstRawHand, secondRawHand);
+
+    if (highCardCheck !== 0) return highCardCheck;
 
     // Else they are equal (only if exactly the same cards)
     return 0;
   });
-  console.log(sorted);
+
+  const split = sorted.map((x) => x.split(" "));
+  // console.log(sorted.reverse());
+  // console.log(split);
+  // Now calculate total
+  split.forEach((hand, i) => {
+    console.log(hand);
+    total += (i + 1) * parseInt(hand[1]);
+  });
+  console.log(total);
 };
 
 const convertToMap = (hand: string) => {
@@ -75,17 +128,27 @@ const convertToMap = (hand: string) => {
   return handMap;
 };
 
-const checkX = (
-  hand: Map<string, number>,
-  number: number
-): [boolean, string] => {
+const checkSecondaryRule = (firstHand: string, secondHand: string) => {
+  for (let i = 0; i < 5; i++) {
+    if (cardStrength.get(firstHand[i])! > cardStrength.get(secondHand[i])!) {
+      return -1;
+    } else if (
+      cardStrength.get(firstHand[i])! < cardStrength.get(secondHand[i])!
+    ) {
+      return 1;
+    }
+  }
+  return 0;
+};
+
+const checkX = (hand: Map<string, number>, number: number) => {
   for (const [key, value] of hand) {
     if (value === number) {
       // found x of a kind
-      return [true, key];
+      return true;
     }
   }
-  return [false, ""];
+  return false;
 };
 
 for (const line of lines) {
@@ -95,15 +158,14 @@ for (const line of lines) {
 const checkXofAKind = (
   firstHand: Map<string, number>,
   secondHand: Map<string, number>,
-  number: number
+  number: number,
+  firstRawHand: string,
+  secondRawHand: string
 ) => {
-  const [firstHasX, firstXNumber] = checkX(firstHand, number);
-  const [secondHasX, secondXNumber] = checkX(secondHand, number);
+  const firstHasX = checkX(firstHand, number);
+  const secondHasX = checkX(secondHand, number);
   if (firstHasX && secondHasX) {
-    // Compare value of 5 card number
-    if (cardStrength.get(firstXNumber)! > cardStrength.get(secondXNumber)!)
-      return -1;
-    return 1;
+    return checkSecondaryRule(firstRawHand, secondRawHand);
   } else if (!firstHasX && !secondHasX) {
     // Move on to next check
     return 0;
@@ -115,7 +177,9 @@ const checkXofAKind = (
 
 const checkFullHouse = (
   firstHand: Map<string, number>,
-  secondHand: Map<string, number>
+  secondHand: Map<string, number>,
+  firstRawHand: string,
+  secondRawHand: string
 ) => {
   // Reverse the map
   const firstMap = new Map();
@@ -130,13 +194,50 @@ const checkFullHouse = (
   const secondFullHouse = secondMap.has(3) && secondMap.has(2);
 
   if (firstFullHouse && secondFullHouse) {
-    // TODO: There are two tiebreakers
-    // Not that hard tho
-    return 0;
+    return checkSecondaryRule(firstRawHand, secondRawHand);
   } else if (!firstFullHouse && !secondFullHouse) {
     return 0;
   } else {
     return firstFullHouse ? -1 : 1;
+  }
+};
+
+const checkTwoPair = (
+  firstHand: Map<string, number>,
+  secondHand: Map<string, number>,
+  firstRawHand: string,
+  secondRawHand: string
+) => {
+  let firstPairCount = 0;
+  for (const value of firstHand.values()) {
+    if (value === 2) firstPairCount++;
+  }
+  let secondPairCount = 0;
+  for (const value of secondHand.values()) {
+    if (value === 2) secondPairCount++;
+  }
+  if (firstPairCount === 2 && secondPairCount === 2) {
+    return checkSecondaryRule(firstRawHand, secondRawHand);
+  } else if (firstPairCount !== 2 && secondPairCount !== 2) {
+    return 0;
+  } else {
+    return firstPairCount === 2 ? -1 : 1;
+  }
+};
+
+const checkHighCard = (firstHand: string, secondHand: string) => {
+  let firstHighest = 0;
+  let secondHighest = 0;
+  for (let i = 0; i < 5; i++) {
+    if (cardStrength.get(firstHand[i])! > firstHighest)
+      firstHighest = cardStrength.get(firstHand[i])!;
+    if (cardStrength.get(secondHand[i])! > secondHighest)
+      secondHighest = cardStrength.get(secondHand[i])!;
+  }
+  if (firstHighest === secondHighest) {
+    return checkSecondaryRule(firstHand, secondHand);
+  } else {
+    return firstHighest > secondHighest ? -1 : 1;
   }
 };
 
