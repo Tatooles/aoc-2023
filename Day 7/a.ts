@@ -94,23 +94,16 @@ const main = () => {
 
     if (twoCheck !== 0) return twoCheck;
 
-    // high card
-    const highCardCheck = checkHighCard(firstRawHand, secondRawHand);
-
-    if (highCardCheck !== 0) return highCardCheck;
-
-    // Else they are equal (only if exactly the same cards)
-    return 0;
+    // high card (misleading in prompt)
+    return checkSecondaryRule(firstRawHand, secondRawHand);
   });
 
-  const split = sorted.map((x) => x.split(" "));
-  // console.log(sorted.reverse());
-  // console.log(split);
   // Now calculate total
-  split.forEach((hand, i) => {
-    console.log(hand);
-    total += (i + 1) * parseInt(hand[1]);
-  });
+  sorted
+    .map((x) => x.split(" "))
+    .forEach((hand, i) => {
+      total += (i + 1) * parseInt(hand[1]);
+    });
   console.log(total);
 };
 
@@ -142,7 +135,7 @@ const checkSecondaryRule = (firstHand: string, secondHand: string) => {
 };
 
 const checkX = (hand: Map<string, number>, number: number) => {
-  for (const [key, value] of hand) {
+  for (const value of hand.values()) {
     if (value === number) {
       // found x of a kind
       return true;
@@ -150,10 +143,6 @@ const checkX = (hand: Map<string, number>, number: number) => {
   }
   return false;
 };
-
-for (const line of lines) {
-  // console.log(line);
-}
 
 const checkXofAKind = (
   firstHand: Map<string, number>,
@@ -190,6 +179,7 @@ const checkFullHouse = (
   for (const [key, value] of secondHand) {
     secondMap.set(value, key);
   }
+
   const firstFullHouse = firstMap.has(3) && firstMap.has(2);
   const secondFullHouse = secondMap.has(3) && secondMap.has(2);
 
@@ -212,32 +202,18 @@ const checkTwoPair = (
   for (const value of firstHand.values()) {
     if (value === 2) firstPairCount++;
   }
+
   let secondPairCount = 0;
   for (const value of secondHand.values()) {
     if (value === 2) secondPairCount++;
   }
+
   if (firstPairCount === 2 && secondPairCount === 2) {
     return checkSecondaryRule(firstRawHand, secondRawHand);
   } else if (firstPairCount !== 2 && secondPairCount !== 2) {
     return 0;
   } else {
     return firstPairCount === 2 ? -1 : 1;
-  }
-};
-
-const checkHighCard = (firstHand: string, secondHand: string) => {
-  let firstHighest = 0;
-  let secondHighest = 0;
-  for (let i = 0; i < 5; i++) {
-    if (cardStrength.get(firstHand[i])! > firstHighest)
-      firstHighest = cardStrength.get(firstHand[i])!;
-    if (cardStrength.get(secondHand[i])! > secondHighest)
-      secondHighest = cardStrength.get(secondHand[i])!;
-  }
-  if (firstHighest === secondHighest) {
-    return checkSecondaryRule(firstHand, secondHand);
-  } else {
-    return firstHighest > secondHighest ? -1 : 1;
   }
 };
 
