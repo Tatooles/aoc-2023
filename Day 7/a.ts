@@ -29,42 +29,29 @@ const main = () => {
     // Implement sorting algo highest number returned at top
 
     // 5 of a kind
-    const [firstHas5, first5Number] = checkX(firstHand, 5);
-    const [secondHas5, second5Number] = checkX(secondHand, 5);
-    if (firstHas5 && secondHas5) {
-      // Compare value of 5 card number
-      if (cardStrength.get(first5Number)! > cardStrength.get(second5Number)!)
-        return -1;
-      return 1;
-    } else if (!firstHas5 && !secondHas5) {
-      // Move on to next check
-    } else {
-      // Return whichever one is true
-      return firstHas5 ? -1 : 1;
-    }
+    const fiveCheck = checkXofAKind(firstHand, secondHand, 5);
+
+    if (fiveCheck !== 0) return fiveCheck;
 
     // 4 of a kind
-    const [firstHas4, first4Number] = checkX(firstHand, 4);
-    const [secondHas4, second4Number] = checkX(secondHand, 4);
-    if (firstHas4 && secondHas4) {
-      // Compare value of 5 card number
-      if (cardStrength.get(first4Number)! > cardStrength.get(second4Number)!)
-        return -1;
-      return 1;
-    } else if (!firstHas4 && !secondHas4) {
-      // Move on to next check
-    } else {
-      // Return whichever one is true
-      return firstHas4 ? -1 : 1;
-    }
+    const fourCheck = checkXofAKind(firstHand, secondHand, 4);
+
+    if (fourCheck !== 0) return fourCheck;
 
     // Full house
+    const fullHouseCheck = checkFullHouse(firstHand, secondHand);
+
+    if (fullHouseCheck !== 0) return fullHouseCheck;
 
     // 3 of a kind
+    const threeCheck = checkXofAKind(firstHand, secondHand, 3);
+
+    if (threeCheck !== 0) return threeCheck;
 
     // 2 pair
 
     // 1 pair
+    // AKA 2 of a kind
 
     // high card
 
@@ -94,8 +81,7 @@ const checkX = (
 ): [boolean, string] => {
   for (const [key, value] of hand) {
     if (value === number) {
-      // found 5 of a kind
-      console.log(`has ${number} of a kind:`, hand);
+      // found x of a kind
       return [true, key];
     }
   }
@@ -106,21 +92,52 @@ for (const line of lines) {
   // console.log(line);
 }
 
-// const checkXofAKind = (number: number) => {
-//   const [firstHas4, first4Number] = checkX(firstHand, 4);
-//   const [secondHas4, second4Number] = checkX(secondHand, 4);
-//   if (firstHas4 && secondHas4) {
-//     // Compare value of 5 card number
-//     if (cardStrength.get(first4Number)! > cardStrength.get(second4Number)!)
-//       return -1;
-//     return 1;
-//   } else if (!firstHas4 && !secondHas4) {
-//     // Move on to next check
-//     return 0;
-//   } else {
-//     // Return whichever one is true
-//     return firstHas4 ? -1 : 1;
-//   }
-// };
+const checkXofAKind = (
+  firstHand: Map<string, number>,
+  secondHand: Map<string, number>,
+  number: number
+) => {
+  const [firstHasX, firstXNumber] = checkX(firstHand, number);
+  const [secondHasX, secondXNumber] = checkX(secondHand, number);
+  if (firstHasX && secondHasX) {
+    // Compare value of 5 card number
+    if (cardStrength.get(firstXNumber)! > cardStrength.get(secondXNumber)!)
+      return -1;
+    return 1;
+  } else if (!firstHasX && !secondHasX) {
+    // Move on to next check
+    return 0;
+  } else {
+    // Return whichever one is true
+    return firstHasX ? -1 : 1;
+  }
+};
+
+const checkFullHouse = (
+  firstHand: Map<string, number>,
+  secondHand: Map<string, number>
+) => {
+  // Reverse the map
+  const firstMap = new Map();
+  const secondMap = new Map();
+  for (const [key, value] of firstHand) {
+    firstMap.set(value, key);
+  }
+  for (const [key, value] of secondHand) {
+    secondMap.set(value, key);
+  }
+  const firstFullHouse = firstMap.has(3) && firstMap.has(2);
+  const secondFullHouse = secondMap.has(3) && secondMap.has(2);
+
+  if (firstFullHouse && secondFullHouse) {
+    // TODO: There are two tiebreakers
+    // Not that hard tho
+    return 0;
+  } else if (!firstFullHouse && !secondFullHouse) {
+    return 0;
+  } else {
+    return firstFullHouse ? -1 : 1;
+  }
+};
 
 main();
