@@ -139,9 +139,16 @@ const checkX = (hand: Map<string, number>, number: number) => {
   // Jokers are considered one of the x
   let jokers = hand.get("J");
   if (!jokers) jokers = 0;
+  if (jokers === 5) return true;
+
   // Or number - jokers. Prob just pass a param for joker count
   for (const value of hand.values()) {
     if (value === number - jokers) {
+      // FIXME: We have an erronious 4 of a kind
+      // It's seeing the two jokers as a pair
+      if (number === 4) {
+        console.log(hand, "is 4 of a kind", number, jokers);
+      }
       // found x of a kind
       return true;
     }
@@ -194,12 +201,10 @@ const checkFullHouse = (
   // Add in joker cases
   const firstFullHouse =
     (firstMap.has(3) && firstMap.has(2)) ||
-    (firstMap.has(2) && firstMap.has(2) && firstJokers === 1) ||
-    (firstMap.has(2) && firstJokers === 2);
+    (firstMap.has(2) && firstMap.has(2) && firstJokers === 1);
   const secondFullHouse =
     (secondMap.has(3) && secondMap.has(2)) ||
-    (secondMap.has(2) && secondMap.has(2) && secondJokers === 1) ||
-    (secondMap.has(2) && secondJokers === 2);
+    (secondMap.has(2) && secondMap.has(2) && secondJokers === 1);
 
   if (firstFullHouse && secondFullHouse) {
     return checkSecondaryRule(firstRawHand, secondRawHand);
@@ -216,6 +221,12 @@ const checkTwoPair = (
   firstRawHand: string,
   secondRawHand: string
 ) => {
+  let firstJokers = firstHand.get("J");
+  if (!firstJokers) firstJokers = 0;
+
+  let secondJokers = secondHand.get("J");
+  if (!secondJokers) secondJokers = 0;
+  // Here would only need a pair and a joker or 2 jokers
   let firstPairCount = 0;
   for (const value of firstHand.values()) {
     if (value === 2) firstPairCount++;
@@ -226,12 +237,31 @@ const checkTwoPair = (
     if (value === 2) secondPairCount++;
   }
 
-  if (firstPairCount === 2 && secondPairCount === 2) {
+  let firstHasTwoPair = false;
+  let secondHasTwoPair = false;
+
+  if (
+    firstPairCount === 2 ||
+    firstJokers === 2 ||
+    (firstPairCount === 1 && firstJokers === 1)
+  ) {
+    firstHasTwoPair = true;
+  }
+
+  if (
+    secondPairCount === 2 ||
+    secondJokers === 2 ||
+    (secondPairCount === 1 && secondJokers === 1)
+  ) {
+    secondHasTwoPair = true;
+  }
+
+  if (firstHasTwoPair && secondHasTwoPair) {
     return checkSecondaryRule(firstRawHand, secondRawHand);
-  } else if (firstPairCount !== 2 && secondPairCount !== 2) {
+  } else if (!firstHasTwoPair && !secondHasTwoPair) {
     return 0;
   } else {
-    return firstPairCount === 2 ? -1 : 1;
+    return firstHasTwoPair ? -1 : 1;
   }
 };
 
