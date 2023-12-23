@@ -141,14 +141,12 @@ const checkX = (hand: Map<string, number>, number: number) => {
   if (!jokers) jokers = 0;
   if (jokers === 5) return true;
 
+  const copiedHand = new Map(hand);
+  copiedHand.delete("J");
+
   // Or number - jokers. Prob just pass a param for joker count
-  for (const value of hand.values()) {
+  for (const value of copiedHand.values()) {
     if (value === number - jokers) {
-      // FIXME: We have an erronious 4 of a kind
-      // It's seeing the two jokers as a pair
-      if (number === 4) {
-        console.log(hand, "is 4 of a kind", number, jokers);
-      }
       // found x of a kind
       return true;
     }
@@ -182,13 +180,19 @@ const checkFullHouse = (
   firstRawHand: string,
   secondRawHand: string
 ) => {
+  const copiedFirstHand = new Map(firstHand);
+  copiedFirstHand.delete("J");
+
+  const copiedSecondHand = new Map(secondHand);
+  copiedSecondHand.delete("J");
+
   // Reverse the map
   const firstMap = new Map();
   const secondMap = new Map();
-  for (const [key, value] of firstHand) {
+  for (const [key, value] of copiedFirstHand) {
     firstMap.set(value, key);
   }
-  for (const [key, value] of secondHand) {
+  for (const [key, value] of copiedSecondHand) {
     secondMap.set(value, key);
   }
 
@@ -198,13 +202,21 @@ const checkFullHouse = (
   let secondJokers = secondHand.get("J");
   if (!secondJokers) secondJokers = 0;
 
+  // We're doing the same check twice, the whole thing doesn't work
+
+  // Essentially we want to check if it's two pair plus a joker
+
   // Add in joker cases
   const firstFullHouse =
     (firstMap.has(3) && firstMap.has(2)) ||
-    (firstMap.has(2) && firstMap.has(2) && firstJokers === 1);
+    (checkStandardTwoPair(copiedFirstHand) && firstJokers === 1);
   const secondFullHouse =
     (secondMap.has(3) && secondMap.has(2)) ||
-    (secondMap.has(2) && secondMap.has(2) && secondJokers === 1);
+    (checkStandardTwoPair(copiedSecondHand) && secondJokers === 1);
+
+  if (firstFullHouse) {
+    console.log(firstRawHand, "is full house", firstMap);
+  }
 
   if (firstFullHouse && secondFullHouse) {
     return checkSecondaryRule(firstRawHand, secondRawHand);
@@ -262,6 +274,17 @@ const checkTwoPair = (
     return 0;
   } else {
     return firstHasTwoPair ? -1 : 1;
+  }
+};
+
+const checkStandardTwoPair = (hand: Map<string, number>) => {
+  let count = 0;
+  for (const value of hand.values()) {
+    if (value === 2) count++;
+  }
+
+  if (count === 2) {
+    return true;
   }
 };
 
