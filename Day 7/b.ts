@@ -102,7 +102,6 @@ const main = () => {
   sorted
     .map((x) => x.split(" "))
     .forEach((hand, i) => {
-      console.log(hand);
       total += (i + 1) * parseInt(hand[1]);
     });
   console.log(total);
@@ -180,21 +179,11 @@ const checkFullHouse = (
   firstRawHand: string,
   secondRawHand: string
 ) => {
-  const copiedFirstHand = new Map(firstHand);
-  copiedFirstHand.delete("J");
-
-  const copiedSecondHand = new Map(secondHand);
-  copiedSecondHand.delete("J");
-
   // Reverse the map
   const firstMap = new Map();
   const secondMap = new Map();
-  for (const [key, value] of copiedFirstHand) {
-    firstMap.set(value, key);
-  }
-  for (const [key, value] of copiedSecondHand) {
-    secondMap.set(value, key);
-  }
+  for (const [key, value] of firstHand) firstMap.set(value, key);
+  for (const [key, value] of secondHand) secondMap.set(value, key);
 
   let firstJokers = firstHand.get("J");
   if (!firstJokers) firstJokers = 0;
@@ -202,21 +191,13 @@ const checkFullHouse = (
   let secondJokers = secondHand.get("J");
   if (!secondJokers) secondJokers = 0;
 
-  // We're doing the same check twice, the whole thing doesn't work
-
   // Essentially we want to check if it's two pair plus a joker
-
-  // Add in joker cases
   const firstFullHouse =
     (firstMap.has(3) && firstMap.has(2)) ||
-    (checkStandardTwoPair(copiedFirstHand) && firstJokers === 1);
+    (checkStandardTwoPair(firstHand) && firstJokers === 1);
   const secondFullHouse =
     (secondMap.has(3) && secondMap.has(2)) ||
-    (checkStandardTwoPair(copiedSecondHand) && secondJokers === 1);
-
-  if (firstFullHouse) {
-    console.log(firstRawHand, "is full house", firstMap);
-  }
+    (checkStandardTwoPair(secondHand) && secondJokers === 1);
 
   if (firstFullHouse && secondFullHouse) {
     return checkSecondaryRule(firstRawHand, secondRawHand);
@@ -238,6 +219,7 @@ const checkTwoPair = (
 
   let secondJokers = secondHand.get("J");
   if (!secondJokers) secondJokers = 0;
+
   // Here would only need a pair and a joker or 2 jokers
   let firstPairCount = 0;
   for (const value of firstHand.values()) {
@@ -283,9 +265,7 @@ const checkStandardTwoPair = (hand: Map<string, number>) => {
     if (value === 2) count++;
   }
 
-  if (count === 2) {
-    return true;
-  }
+  if (count === 2) return true;
 };
 
 main();
